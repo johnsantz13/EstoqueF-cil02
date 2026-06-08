@@ -1,0 +1,19 @@
+{
+  "name": "estoque-facil-mvc",
+  "version": "1.0.0",
+  "description": "Estoque Facil em arquitetura MVC com API, rotas e banco MySQL.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "db:init": "node scripts/init-db.js",
+    "db:mysql:setup": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/configurar-mysql.ps1"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mysql2": "^3.22.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

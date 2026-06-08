@@ -1,0 +1,152 @@
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .corTop {
+            background: linear-gradient(90deg, #ffbf94, #ff960d, #ff6905);
+        }
+
+        #banner-carousel {
+            z-index: -1;
+        }
+
+        #corBott {
+            background-color: #fc7443;
+            margin-bottom: 3%;
+            margin-right: 3%;
+        }
+
+        .Foot_Direit {
+            padding-top: 50px;
+        }
+
+        #carda_Cor {
+            font-weight: bold;
+            padding: 20px;
+            color: #FD6306;
+            margin-top: 10px;
+            text-align: center;
+            font-size: xx-large;
+        }
+
+        #equipe {
+            padding: 2%;
+        }
+
+        #bi {
+            transform: none;
+        }
+        
+
+        .iconeCard {
+            transform: translateX(-50%);
+            color: aliceblue;
+        }
+
+        .cardapio-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .top-cart-button {
+            position: relative;
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background: #fff;
+            color: #FD6306;
+            font-weight: 800;
+            border: 1px solid rgba(253, 99, 6, 0.35);
+            box-shadow: 0 8px 18px rgba(131, 56, 14, 0.12);
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+
+        .top-cart-button:hover {
+            transform: translateY(-1px);
+            background: #fff7f0;
+            color: #d94f00;
+        }
+
+        .top-cart-button i {
+            font-size: 1.35rem;
+            line-height: 1;
+        }
+
+        .cart-count-badge {
+            position: absolute;
+            top: -9px;
+            right: -9px;
+            min-width: 24px;
+            height: 24px;
+            padding: 0 7px;
+            border-radius: 999px;
+            background: #dc2626;
+            color: #fff;
+            font-size: 0.76rem;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            box-shadow: 0 6px 14px rgba(220, 38, 38, 0.28);
+        }
+
+        .cart-count-badge.hidden {
+            display: none;
+        }
+
+        @media(max-width:1180px) and (min-width: 769px) {
+            
+           body {
+            font-size: 16px;
+           }
+           
+            #bi {
+                transform: none;
+            }
+
+            .iconeCard {
+                transform: translateX(50%);
+            }
+            .p-6 {
+                height: 92px;
+            }
+        }
+
+        @media(max-width:768px) {
+
+           body {
+            font-size: 14px;
+           }
+            
+            #bi {
+                transform: none;
+                width: 155px;
+            }
+
+            .cardapio-header-actions {
+                gap: 8px;
+            }
+
+            .top-cart-button {
+                padding: 10px 12px;
+            }
+
+            .iconeCard {
+                transform: translateX(0%);
+            }
+            #corBott {
+                transform: translateX(-25%);
+                width: 244px;
+                margin-right: 0;
+                margin-bottom: 3%;
+            }
+            .p-6 {
+                height: 92px;
+            }
+        }
