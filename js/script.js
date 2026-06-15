@@ -16,6 +16,65 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.saveAppData = saveAppData;
 
+    const requestJson = async (url, options = {}) => {
+        const response = await fetch(url, options);
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.error || data.message || 'Erro ao acessar o servidor.');
+        }
+
+        return data;
+    };
+
+    const loadIngredientCatalog = async () => {
+        const [units, initialIngredients] = await Promise.all([
+            requestJson('/api/unidades'),
+            requestJson('/api/ingredientes')
+        ]);
+        const unitsById = new Map(units.map(unit => [Number(unit.id), unit]));
+        const legacyData = getAppData();
+        const legacyIngredients = legacyData.baseIngredients || [];
+        let ingredients = initialIngredients;
+
+        if (legacyIngredients.length > 0) {
+            for (const legacyIngredient of legacyIngredients) {
+                const unit = units.find(item =>
+                    item.sigla.toLowerCase() === String(legacyIngredient.unit).toLowerCase()
+                );
+                const alreadyExists = ingredients.some(item =>
+                    item.nome.trim().toLowerCase() === String(legacyIngredient.name).trim().toLowerCase()
+                    && Number(item.unidade_id) === Number(unit?.id)
+                );
+
+                if (!unit || alreadyExists) continue;
+
+                const createdIngredient = await requestJson('/api/ingredientes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: legacyIngredient.name,
+                        unidade_id: unit.id,
+                        custo_por_unidade: Number(legacyIngredient.cost) || 0,
+                        ativo: 1
+                    })
+                });
+                ingredients = [createdIngredient, ...ingredients];
+            }
+
+            delete legacyData.baseIngredients;
+            saveAppData(legacyData);
+        }
+
+        return {
+            units,
+            ingredients: ingredients.map(ingredient => ({
+                ...ingredient,
+                unit: unitsById.get(Number(ingredient.unidade_id))
+            }))
+        };
+    };
+
     // --- FUNÇÕES GLOBAIS DO CARRINHO (acessíveis por script_Modal.js) ---
     // Também são atribuídas ao objeto window.
 
@@ -123,8 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const populateIngredientsDropdown = () => {
-            const baseIngredients = getAppData().baseIngredients || [];
+        const populateIngredientsDropdown = async () => {
+            ingredientSelect.innerHTML = '<option value="" disabled selected>Carregando ingredientes...</option>';
+
+            let baseIngredients;
+            try {
+                ({ ingredients: baseIngredients } = await loadIngredientCatalog());
+            } catch (error) {
+                ingredientSelect.innerHTML = '<option value="" disabled selected>Erro ao carregar ingredientes</option>';
+                alert(error.message);
+                return;
+            }
+
             ingredientSelect.innerHTML = '<option value="" disabled selected>Selecione um ingrediente</option>';
             if (baseIngredients.length === 0) {
                 ingredientSelect.innerHTML = '<option value="" disabled selected>Nenhum ingrediente cadastrado</option>';
@@ -133,10 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
             baseIngredients.forEach(ing => {
                 const option = document.createElement('option');
                 option.value = ing.id;
-                option.textContent = `${ing.name} (R$ ${ing.cost.toFixed(2)} / ${ing.unit})`;
-                option.dataset.cost = ing.cost;
-                option.dataset.unit = ing.unit;
-                option.dataset.name = ing.name;
+                option.textContent = `${ing.nome} (R$ ${Number(ing.custo_por_unidade).toFixed(2)} / ${ing.unit?.sigla || '-'})`;
+                option.dataset.cost = ing.custo_por_unidade;
+                option.dataset.unit = ing.unit?.sigla || '';
+                option.dataset.name = ing.nome;
                 ingredientSelect.appendChild(option);
             });
         };
@@ -291,20 +360,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('add-base-ingredient-form');
         const ingredientsList = document.getElementById('base-ingredients-list');
         const noItemsMsg = document.getElementById('no-base-ingredients-msg');
+        const unitSelect = document.getElementById('base-ingredient-unit');
 
-        const getBaseIngredients = () => {
-            const appData = getAppData();
-            return appData.baseIngredients || [];
-        };
+        const renderBaseIngredients = async () => {
+            ingredientsList.innerHTML = '<p class="text-center text-gray-500 mt-10">Carregando ingredientes...</p>';
+            unitSelect.disabled = true;
 
-        const saveBaseIngredients = (ingredients) => {
-            const appData = getAppData();
-            appData.baseIngredients = ingredients;
-            saveAppData(appData);
-        };
+            let units;
+            let ingredients;
+            try {
+                ({ units, ingredients } = await loadIngredientCatalog());
+            } catch (error) {
+                ingredientsList.innerHTML = `<p class="text-center text-red-500 mt-10">${error.message}</p>`;
+                return;
+            }
 
-        const renderBaseIngredients = () => {
-            const ingredients = getBaseIngredients();
+            unitSelect.innerHTML = '<option value="" disabled selected>Selecione</option>';
+            units.forEach(unit => {
+                const option = document.createElement('option');
+                option.value = unit.id;
+                option.textContent = `${unit.nome} (${unit.sigla})`;
+                unitSelect.appendChild(option);
+            });
+            unitSelect.disabled = false;
+
             ingredientsList.innerHTML = ''; // Limpa a lista
             
             if (ingredients.length === 0) {
@@ -316,10 +395,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const itemEl = document.createElement('div');
                     itemEl.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-md flex justify-between items-center';
                     itemEl.innerHTML = `
-                        <span class="font-medium text-gray-800 dark:text-gray-200">${ing.name}</span>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">${ing.nome}</span>
                         <div class="flex items-center gap-4">
-                            <span class="text-xs text-gray-500 dark:text-gray-400">Custo: R$ ${ing.cost.toFixed(2)} / ${ing.unit}</span>
-                            <button type="button" class="text-red-500 hover:text-red-700"><i class="bi bi-trash-fill"></i></button>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Custo: R$ ${Number(ing.custo_por_unidade).toFixed(2)} / ${ing.unit?.sigla || '-'}</span>
+                            <button type="button" data-ingredient-id="${ing.id}" class="delete-base-ingredient-btn text-red-500 hover:text-red-700"><i class="bi bi-trash-fill"></i></button>
                         </div>
                     `;
                     ingredientsList.appendChild(itemEl);
@@ -327,19 +406,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const newIngredient = {
-                id: `ing-${Date.now()}`,
-                name: document.getElementById('base-ingredient-name').value,
-                unit: document.getElementById('base-ingredient-unit').value,
-                cost: parseFloat(document.getElementById('base-ingredient-cost').value)
-            };
-            const ingredients = getBaseIngredients();
-            ingredients.push(newIngredient);
-            saveBaseIngredients(ingredients);
-            renderBaseIngredients();
-            form.reset();
+
+            try {
+                await requestJson('/api/ingredientes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: document.getElementById('base-ingredient-name').value.trim(),
+                        unidade_id: Number(unitSelect.value),
+                        custo_por_unidade: Number(document.getElementById('base-ingredient-cost').value),
+                        ativo: 1
+                    })
+                });
+                form.reset();
+                await renderBaseIngredients();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        ingredientsList.addEventListener('click', async (event) => {
+            const deleteButton = event.target.closest('.delete-base-ingredient-btn');
+            if (!deleteButton || !confirm('Tem certeza que deseja excluir este ingrediente?')) return;
+
+            try {
+                await requestJson(`/api/ingredientes/${deleteButton.dataset.ingredientId}`, {
+                    method: 'DELETE'
+                });
+                await renderBaseIngredients();
+            } catch (error) {
+                alert(error.message);
+            }
         });
 
         renderBaseIngredients();
@@ -360,17 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const saveRecipes = (recipes) => {
             const appData = getAppData();
             appData.recipes = recipes;
-            saveAppData(appData);
-        };
-
-        const getBaseIngredients = () => {
-            const appData = getAppData();
-            return appData.baseIngredients || [];
-        };
-
-        const saveBaseIngredients = (ingredients) => {
-            const appData = getAppData();
-            appData.baseIngredients = ingredients;
             saveAppData(appData);
         };
 
@@ -399,20 +487,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        const renderBaseIngredients = () => {
-            const ingredients = getBaseIngredients();
+        const renderBaseIngredients = async () => {
+            let ingredients;
+            try {
+                ({ ingredients } = await loadIngredientCatalog());
+            } catch (error) {
+                ingredientsList.innerHTML = `<li class="text-center text-red-500">${error.message}</li>`;
+                return;
+            }
+
             ingredientsList.innerHTML = '';
             if (ingredients.length === 0) {
                 noIngredientsMsg.classList.remove('hidden');
+                ingredientsList.appendChild(noIngredientsMsg);
             } else {
                 noIngredientsMsg.classList.add('hidden');
                 ingredients.forEach(ing => {
                     const itemEl = document.createElement('li');
                     itemEl.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-md flex justify-between items-center';
                     itemEl.innerHTML = `
-                        <span class="font-medium text-gray-800 dark:text-gray-200">${ing.name}</span>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">${ing.nome}</span>
                         <div class="flex items-center gap-4">
-                            <span class="text-xs text-gray-500 dark:text-gray-400">Custo: R$ ${ing.cost.toFixed(2)} / ${ing.unit}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Custo: R$ ${Number(ing.custo_por_unidade).toFixed(2)} / ${ing.unit?.sigla || '-'}</span>
                             <button type="button" data-ingredient-id="${ing.id}" class="delete-ingredient-btn text-red-500 hover:text-red-700"><i class="bi bi-trash-fill"></i></button>
                         </div>
                     `;
@@ -434,15 +530,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        ingredientsList.addEventListener('click', (event) => {
+        ingredientsList.addEventListener('click', async (event) => {
             const deleteButton = event.target.closest('.delete-ingredient-btn');
             if (deleteButton) {
                 if (confirm('Tem certeza que deseja excluir este ingrediente?')) {
-                    const ingredientId = deleteButton.dataset.ingredientId;
-                    let ingredients = getBaseIngredients();
-                    ingredients = ingredients.filter(i => i.id !== ingredientId);
-                    saveBaseIngredients(ingredients);
-                    renderBaseIngredients();
+                    try {
+                        await requestJson(`/api/ingredientes/${deleteButton.dataset.ingredientId}`, {
+                            method: 'DELETE'
+                        });
+                        await renderBaseIngredients();
+                    } catch (error) {
+                        alert(error.message);
+                    }
                 }
             }
         });
