@@ -42,7 +42,7 @@
                                 <input type="text" id="company-cnpj" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" placeholder="00.000.000/0000-00">
                             </div>
                             <div>
-                                <label for="contact-phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">NÃºmero para contato</label>
+                                <label for="contact-phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Número para contato</label>
                                 <input type="tel" id="contact-phone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" placeholder="(00) 90000-0000" required>
                             </div>
                             <div>
@@ -54,12 +54,17 @@
                                 <input type="email" id="contact-email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" placeholder="contato@empresa.com">
                             </div>
                             <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">EndereÃ§o</label>
+                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Endereço</label>
                                 <input type="text" id="supplier-address" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" placeholder="Rua, Cidade, Estado">
                             </div>
-                            <button type="submit" class="w-full text-white bg-orange-600 hover:bg-orange-700 font-medium rounded-lg text-sm px-5 py-3 text-center">
-                                <i class="bi bi-person-plus-fill mr-2"></i>Cadastrar Fornecedor
-                            </button>
+                            <div class="flex gap-3">
+                                <button id="submit-supplier-button" type="submit" class="flex-1 text-white bg-orange-600 hover:bg-orange-700 font-medium rounded-lg text-sm px-5 py-3 text-center">
+                                    <i class="bi bi-person-plus-fill mr-2"></i><span>Cadastrar Fornecedor</span>
+                                </button>
+                                <button id="cancel-edit-button" type="button" class="hidden text-white bg-gray-600 hover:bg-gray-700 font-medium rounded-lg text-sm px-5 py-3 text-center">
+                                    Cancelar
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -85,6 +90,34 @@
         document.addEventListener('DOMContentLoaded', () => {
             const supplierForm = document.getElementById('add-supplier-form');
             const supplierList = document.getElementById('suppliers-list');
+            const submitButton = document.getElementById('submit-supplier-button');
+            const submitButtonText = submitButton.querySelector('span');
+            const submitButtonIcon = submitButton.querySelector('i');
+            const cancelEditButton = document.getElementById('cancel-edit-button');
+            let editingSupplierId = null;
+
+            const setFormMode = (supplier = null) => {
+                editingSupplierId = supplier?.id || null;
+
+                if (supplier) {
+                    document.getElementById('contact-name').value = supplier.nome_contato || '';
+                    document.getElementById('company-cnpj').value = supplier.cnpj || '';
+                    document.getElementById('contact-phone').value = supplier.telefone || '';
+                    document.getElementById('company-name').value = supplier.nome_empresa || '';
+                    document.getElementById('contact-email').value = supplier.email || '';
+                    document.getElementById('supplier-address').value = supplier.endereco || '';
+                    submitButtonText.textContent = 'Salvar alterações';
+                    submitButtonIcon.className = 'bi bi-check-lg mr-2';
+                    cancelEditButton.classList.remove('hidden');
+                    document.getElementById('contact-name').focus();
+                    return;
+                }
+
+                supplierForm.reset();
+                submitButtonText.textContent = 'Cadastrar Fornecedor';
+                submitButtonIcon.className = 'bi bi-person-plus-fill mr-2';
+                cancelEditButton.classList.add('hidden');
+            };
 
             const renderSuppliers = async () => {
                 supplierList.innerHTML = '<p class="text-sm text-gray-600 dark:text-gray-300">Carregando fornecedores...</p>';
@@ -141,26 +174,45 @@
                 };
 
                 try {
-                    const response = await fetch('/api/fornecedores', {
-                        method: 'POST',
+                    const url = editingSupplierId
+                        ? `/api/fornecedores/${editingSupplierId}`
+                        : '/api/fornecedores';
+                    const response = await fetch(url, {
+                        method: editingSupplierId ? 'PUT' : 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newSupplier)
                     });
 
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
-                        throw new Error(error.error || error.message || 'Erro ao cadastrar fornecedor.');
+                        throw new Error(error.error || error.message || 'Erro ao salvar fornecedor.');
                     }
 
-                    supplierForm.reset();
+                    setFormMode();
                     await renderSuppliers();
                 } catch (error) {
                     alert(error.message);
                 }
             });
 
-            window.editSupplier = (id) => {
-                alert(`Editando fornecedor ${id}`);
+            cancelEditButton.addEventListener('click', () => {
+                setFormMode();
+            });
+
+            window.editSupplier = async (id) => {
+                try {
+                    const response = await fetch(`/api/fornecedores/${id}`);
+
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar fornecedor para edição.');
+                    }
+
+                    const supplier = await response.json();
+                    setFormMode(supplier);
+                    supplierForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } catch (error) {
+                    alert(error.message);
+                }
             };
 
             window.createQuote = (id) => {
@@ -172,4 +224,3 @@
     </script>
 </body>
 </html>
-
