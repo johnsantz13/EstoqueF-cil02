@@ -37,6 +37,33 @@
             from { transform: translateX(100vw); }
             to { transform: translateX(-100%); }
         }
+        .payment-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .payment-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .payment-modal-card {
+            transform: translateY(14px) scale(0.98);
+            transition: transform 0.2s ease;
+        }
+        .payment-modal.active .payment-modal-card {
+            transform: translateY(0) scale(1);
+        }
+        .subscription-method.active {
+            border-color: #ea580c;
+            background: #fff7ed;
+            color: #ea580c;
+        }
+        .subscription-panel {
+            display: none;
+        }
+        .subscription-panel.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -128,7 +155,7 @@
                 <h3 class="text-2xl font-bold mb-2">Básico</h3>
                 <p class="text-5xl font-extrabold my-4">R$ 49<span class="text-lg font-medium text-gray-500">/mês</span></p>
                 <p class="text-gray-600 mb-6">Ideal para quem está começando. Controle de estoque e PDV.</p>
-                <a href="#" class="w-full inline-block bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors">Assinar Agora</a>
+                <button type="button" class="plan-subscribe-btn w-full inline-block bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors" data-plan-id="basico" data-plan-name="Basico" data-plan-price="49" data-plan-description="Controle de estoque e PDV.">Assinar Agora</button>
             </div>
             <!-- Plano Pro (Destaque) -->
             <div class="section-card bg-orange-600 text-white p-8 rounded-xl shadow-2xl relative">
@@ -136,14 +163,139 @@
                 <h3 class="text-2xl font-bold mb-2">Pro</h3>
                 <p class="text-5xl font-extrabold my-4">R$ 79<span class="text-lg font-medium text-orange-100">/mês</span></p>
                 <p class="text-orange-100 mb-6">Todas as funcionalidades, incluindo relatórios e gestão de mesas.</p>
-                <a href="#" class="w-full inline-block bg-white text-orange-600 font-bold py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors">Assinar Agora</a>
+                <button type="button" class="plan-subscribe-btn w-full inline-block bg-white text-orange-600 font-bold py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors" data-plan-id="pro" data-plan-name="Pro" data-plan-price="79" data-plan-description="Todas as funcionalidades, relatorios e gestao de mesas.">Assinar Agora</button>
             </div>
             <!-- Plano Empresa -->
             <div class="section-card bg-white p-8 rounded-xl shadow-lg text-center">
                 <h3 class="text-2xl font-bold mb-2">Empresa</h3>
                 <p class="text-5xl font-extrabold my-4">R$ 129<span class="text-lg font-medium text-gray-500">/mês</span></p>
                 <p class="text-gray-600 mb-6">Para múltiplos food trucks e suporte prioritário.</p>
-                <a href="#" class="w-full inline-block bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors">Assinar Agora</a>
+                <button type="button" class="plan-subscribe-btn w-full inline-block bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors" data-plan-id="empresa" data-plan-name="Empresa" data-plan-price="129" data-plan-description="Multiplos food trucks e suporte prioritario.">Assinar Agora</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="payment-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" aria-hidden="true">
+        <div class="payment-modal-card bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title">
+            <div class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
+                <div>
+                    <p class="text-sm uppercase tracking-wide text-orange-600 font-bold">Assinatura</p>
+                    <h2 id="payment-modal-title" class="text-2xl font-bold text-gray-900">Pagamento do plano</h2>
+                </div>
+                <button id="close-payment-modal" type="button" class="text-gray-400 hover:text-gray-700 text-3xl leading-none" aria-label="Fechar modal">&times;</button>
+            </div>
+
+            <form id="subscription-form" class="px-6 py-5 space-y-4">
+                <div class="rounded-lg border border-orange-200 bg-orange-50 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <strong id="selected-plan-name" class="block text-lg text-gray-900">Plano</strong>
+                            <span id="selected-plan-description" class="text-sm text-gray-600"></span>
+                        </div>
+                        <span id="selected-plan-price" class="text-2xl font-extrabold text-orange-600">R$ 0</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="block md:col-span-2">
+                        <span class="text-sm font-semibold text-gray-700">Nome</span>
+                        <input id="customer-name" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100" type="text" placeholder="Seu nome" required>
+                    </label>
+                    <label class="block md:col-span-2">
+                        <span class="text-sm font-semibold text-gray-700">E-mail</span>
+                        <input id="customer-email" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100" type="email" placeholder="voce@email.com" required>
+                    </label>
+                    <label class="block">
+                        <span class="text-sm font-semibold text-gray-700">CPF/CNPJ</span>
+                        <input id="customer-tax-id" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100" type="text" placeholder="Somente numeros">
+                    </label>
+                    <label class="block">
+                        <span class="text-sm font-semibold text-gray-700">Telefone</span>
+                        <input id="customer-phone" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100" type="tel" placeholder="(00) 00000-0000">
+                    </label>
+                </div>
+
+                <p id="payment-modal-message" class="hidden rounded-lg px-4 py-3 text-sm"></p>
+
+                <button id="create-checkout-button" type="submit" class="w-full rounded-lg bg-orange-600 px-6 py-3 font-bold text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                    Gerar pagamento
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="payment-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" aria-hidden="true">
+        <div class="payment-modal-card bg-white w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title">
+            <div class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
+                <div>
+                    <p class="text-sm uppercase tracking-wide text-orange-600 font-bold">Pagamento em modo teste</p>
+                    <h2 id="checkout-modal-title" class="text-2xl font-bold text-gray-900">Escolha como deseja pagar</h2>
+                    <p id="checkout-plan-summary" class="text-sm text-gray-600 mt-1"></p>
+                </div>
+                <button id="close-checkout-modal" type="button" class="text-gray-400 hover:text-gray-700 text-3xl leading-none" aria-label="Fechar pagamento">&times;</button>
+            </div>
+
+            <div class="px-6 py-5">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                    <button class="subscription-method active rounded-lg border border-gray-200 p-4 text-left transition-colors" data-subscription-method="pix" type="button">
+                        <i class="bi bi-qr-code text-2xl"></i>
+                        <strong class="block mt-2">PIX</strong>
+                        <span class="text-sm text-gray-500">QR Code AbacatePay</span>
+                    </button>
+                    <button class="subscription-method rounded-lg border border-gray-200 p-4 text-left transition-colors" data-subscription-method="card" type="button">
+                        <i class="bi bi-credit-card-2-front text-2xl"></i>
+                        <strong class="block mt-2">Cartao</strong>
+                        <span class="text-sm text-gray-500">Teste de credito</span>
+                    </button>
+                    <button class="subscription-method rounded-lg border border-gray-200 p-4 text-left transition-colors" data-subscription-method="boleto" type="button">
+                        <i class="bi bi-upc-scan text-2xl"></i>
+                        <strong class="block mt-2">Boleto</strong>
+                        <span class="text-sm text-gray-500">Linha digitavel teste</span>
+                    </button>
+                </div>
+
+                <div class="subscription-panel active" data-subscription-panel="pix">
+                    <div class="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-5 items-center">
+                        <div class="bg-white border border-orange-100 rounded-lg p-5 flex min-h-[220px] items-center justify-center">
+                            <div id="subscription-pix-qrcode" class="text-sm text-gray-500 text-center">Gerando QR Code...</div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-extrabold mb-2">Pague com PIX</h3>
+                            <p class="text-gray-600 mb-4">Escaneie o QR Code ou copie o codigo abaixo. Em modo teste, use o botao de simulacao.</p>
+                            <textarea id="subscription-pix-code" class="h-24 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100" readonly></textarea>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                                <button id="copy-subscription-pix" type="button" class="rounded-lg border border-orange-600 px-4 py-3 font-bold text-orange-600 hover:bg-orange-50">Copiar codigo PIX</button>
+                                <button id="simulate-subscription-pix" type="button" class="rounded-lg bg-gray-900 px-4 py-3 font-bold text-white hover:bg-gray-800">Simular pagamento</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subscription-panel" data-subscription-panel="card">
+                    <h3 class="text-xl font-extrabold mb-4">Cartao em modo teste</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input class="rounded-lg border border-gray-300 px-3 py-2" value="Cliente Teste" aria-label="Nome impresso no cartao">
+                        <input class="rounded-lg border border-gray-300 px-3 py-2" value="4111 1111 1111 1111" aria-label="Numero do cartao">
+                        <input class="rounded-lg border border-gray-300 px-3 py-2" value="12/30" aria-label="Validade">
+                        <input class="rounded-lg border border-gray-300 px-3 py-2" value="123" aria-label="CVV">
+                    </div>
+                    <p class="mt-3 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">Esta opcao apenas aprova a assinatura em modo teste, sem cobranca real.</p>
+                </div>
+
+                <div class="subscription-panel" data-subscription-panel="boleto">
+                    <h3 class="text-xl font-extrabold mb-4">Boleto em modo teste</h3>
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 font-mono text-sm text-gray-700">
+                        23790.00000 00000.000000 00000.000000 0 00000000000000
+                    </div>
+                    <p class="mt-3 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">Linha digitavel de demonstracao. Nenhuma cobranca real sera registrada.</p>
+                </div>
+
+                <p id="checkout-modal-message" class="hidden rounded-lg px-4 py-3 text-sm mt-5"></p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                    <button id="back-to-subscription-form" type="button" class="rounded-lg border border-gray-300 px-6 py-3 font-bold text-gray-700 hover:bg-gray-50">Voltar</button>
+                    <button id="confirm-subscription-payment" type="button" class="rounded-lg bg-orange-600 px-6 py-3 font-bold text-white hover:bg-orange-700">Confirmar teste</button>
+                </div>
             </div>
         </div>
     </div>
@@ -185,5 +337,343 @@
        class="fixed bottom-6 right-6 bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition-transform hover:scale-110 z-30">
         <i class="bi bi-whatsapp text-3xl"></i>
     </a>
+    <script src="/js/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('payment-modal');
+            const checkoutModal = document.getElementById('checkout-modal');
+            const closeButton = document.getElementById('close-payment-modal');
+            const closeCheckoutButton = document.getElementById('close-checkout-modal');
+            const form = document.getElementById('subscription-form');
+            const submitButton = document.getElementById('create-checkout-button');
+            const message = document.getElementById('payment-modal-message');
+            const selectedPlanName = document.getElementById('selected-plan-name');
+            const selectedPlanDescription = document.getElementById('selected-plan-description');
+            const selectedPlanPrice = document.getElementById('selected-plan-price');
+            const checkoutPlanSummary = document.getElementById('checkout-plan-summary');
+            const checkoutMessage = document.getElementById('checkout-modal-message');
+            const pixQrCodeEl = document.getElementById('subscription-pix-qrcode');
+            const pixCodeEl = document.getElementById('subscription-pix-code');
+            const copyPixButton = document.getElementById('copy-subscription-pix');
+            const simulatePixButton = document.getElementById('simulate-subscription-pix');
+            const confirmPaymentButton = document.getElementById('confirm-subscription-payment');
+            const backToFormButton = document.getElementById('back-to-subscription-form');
+            const methodButtons = document.querySelectorAll('.subscription-method');
+            const methodPanels = document.querySelectorAll('.subscription-panel');
+            let selectedPlan = null;
+            let selectedMethod = 'pix';
+            let pixCharge = null;
+            let subscriptionCustomer = null;
+
+            const formatCurrency = (value) => Number(value).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+
+            const showMessage = (text, type = 'error') => {
+                message.textContent = text;
+                message.className = type === 'error'
+                    ? 'rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700'
+                    : 'rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700';
+            };
+
+            const clearFeedback = () => {
+                message.textContent = '';
+                message.className = 'hidden rounded-lg px-4 py-3 text-sm';
+            };
+
+            const showCheckoutMessage = (text, type = 'error') => {
+                checkoutMessage.textContent = text;
+                checkoutMessage.className = type === 'error'
+                    ? 'rounded-lg bg-red-50 px-4 py-3 text-sm mt-5 text-red-700'
+                    : 'rounded-lg bg-green-50 px-4 py-3 text-sm mt-5 text-green-700';
+            };
+
+            const clearCheckoutMessage = () => {
+                checkoutMessage.textContent = '';
+                checkoutMessage.className = 'hidden rounded-lg px-4 py-3 text-sm mt-5';
+            };
+
+            const openModal = (plan) => {
+                selectedPlan = plan;
+                selectedPlanName.textContent = `Plano ${plan.name}`;
+                selectedPlanDescription.textContent = plan.description;
+                selectedPlanPrice.textContent = `${formatCurrency(plan.price)}/mes`;
+                clearFeedback();
+                modal.classList.add('active');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('overflow-hidden');
+                setTimeout(() => document.getElementById('customer-name').focus(), 80);
+            };
+
+            const closeModal = () => {
+                modal.classList.remove('active');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('overflow-hidden');
+            };
+
+            const openCheckoutModal = () => {
+                checkoutPlanSummary.textContent = `${selectedPlan.name} - ${formatCurrency(selectedPlan.price)}/mes`;
+                checkoutModal.classList.add('active');
+                checkoutModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('overflow-hidden');
+            };
+
+            const closeCheckoutModal = () => {
+                checkoutModal.classList.remove('active');
+                checkoutModal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('overflow-hidden');
+            };
+
+            const getCustomer = () => {
+                const customer = {
+                    name: document.getElementById('customer-name').value.trim(),
+                    email: document.getElementById('customer-email').value.trim(),
+                    cellphone: document.getElementById('customer-phone').value.replace(/\D/g, ''),
+                    taxId: document.getElementById('customer-tax-id').value.replace(/\D/g, '')
+                };
+
+                Object.keys(customer).forEach((key) => {
+                    if (!customer[key]) delete customer[key];
+                });
+
+                return customer;
+            };
+
+            const buildPixPayload = () => {
+                const priceInCents = Math.round(Number(selectedPlan.price) * 100);
+                return {
+                    amount: priceInCents,
+                    description: `Assinatura ${selectedPlan.name} - Estoque Facil`,
+                    expiresIn: 3600,
+                    customer: subscriptionCustomer,
+                    metadata: {
+                        origem: 'landing-planos',
+                        planoId: selectedPlan.id,
+                        planoNome: selectedPlan.name,
+                        valorMensal: priceInCents,
+                        modoTeste: true
+                    }
+                };
+            };
+
+            const renderPix = () => {
+                pixQrCodeEl.innerHTML = '';
+                pixCodeEl.value = pixCharge?.brCode || '';
+                copyPixButton.disabled = !pixCharge?.brCode;
+
+                if (pixCharge?.brCodeBase64) {
+                    pixQrCodeEl.innerHTML = `<img src="${pixCharge.brCodeBase64}" alt="QR Code PIX AbacatePay" class="w-[180px] h-[180px] object-contain">`;
+                    return;
+                }
+
+                if (window.QRCode && pixCharge?.brCode) {
+                    new QRCode(pixQrCodeEl, {
+                        text: pixCharge.brCode,
+                        width: 180,
+                        height: 180,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                    return;
+                }
+
+                pixQrCodeEl.textContent = 'QR Code indisponivel.';
+            };
+
+            const createPixCharge = async () => {
+                pixCharge = null;
+                pixQrCodeEl.textContent = 'Gerando QR Code...';
+                pixCodeEl.value = 'Gerando cobranca PIX...';
+                copyPixButton.disabled = true;
+
+                const response = await fetch('/api/abacatepay/pix', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(buildPixPayload())
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Nao foi possivel gerar o PIX de teste.');
+                }
+
+                pixCharge = result.data;
+                renderPix();
+            };
+
+            const simulatePixPayment = async () => {
+                if (!pixCharge?.id) {
+                    throw new Error('Gere o QR Code PIX antes de simular o pagamento.');
+                }
+
+                const response = await fetch(`/api/abacatepay/pix/${encodeURIComponent(pixCharge.id)}/simular`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        metadata: {
+                            planoId: selectedPlan.id,
+                            origem: 'landing-planos'
+                        }
+                    })
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Nao foi possivel simular o pagamento PIX.');
+                }
+
+                pixCharge = result.data || pixCharge;
+                pixCharge.status = pixCharge.status || 'PAID';
+                return pixCharge;
+            };
+
+            const checkPixStatus = async () => {
+                if (!pixCharge?.id) return null;
+
+                const response = await fetch(`/api/abacatepay/pix/${encodeURIComponent(pixCharge.id)}`);
+                const result = await response.json();
+
+                if (response.ok && result.data?.status) {
+                    pixCharge.status = result.data.status;
+                }
+
+                return pixCharge.status;
+            };
+
+            const saveSubscriptionPayment = (method, status = 'PAID') => {
+                const history = JSON.parse(localStorage.getItem('subscriptionTestPayments') || '[]');
+                const payment = {
+                    id: pixCharge?.id || `TEST-${Date.now().toString().slice(-8)}`,
+                    method,
+                    status,
+                    mode: 'test',
+                    plan: selectedPlan,
+                    customer: subscriptionCustomer,
+                    amount: Math.round(Number(selectedPlan.price) * 100),
+                    createdAt: new Date().toISOString()
+                };
+                history.push(payment);
+                localStorage.setItem('subscriptionTestPayments', JSON.stringify(history));
+                return payment;
+            };
+
+            const finishSubscriptionTest = (method) => {
+                const payment = saveSubscriptionPayment(method);
+                showCheckoutMessage(`Pagamento de teste aprovado (${payment.id}). Redirecionando para o cadastro...`, 'success');
+                setTimeout(() => {
+                    window.location.href = `cadastro.html?plano=${encodeURIComponent(selectedPlan.id)}&pagamento=teste&checkout=${encodeURIComponent(payment.id)}`;
+                }, 900);
+            };
+
+            document.querySelectorAll('.plan-subscribe-btn').forEach((button) => {
+                button.addEventListener('click', () => {
+                    openModal({
+                        id: button.dataset.planId,
+                        name: button.dataset.planName,
+                        price: Number(button.dataset.planPrice),
+                        description: button.dataset.planDescription
+                    });
+                });
+            });
+
+            closeButton.addEventListener('click', closeModal);
+            closeCheckoutButton.addEventListener('click', closeCheckoutModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeModal();
+            });
+            checkoutModal.addEventListener('click', (event) => {
+                if (event.target === checkoutModal) closeCheckoutModal();
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && modal.classList.contains('active')) closeModal();
+                if (event.key === 'Escape' && checkoutModal.classList.contains('active')) closeCheckoutModal();
+            });
+
+            methodButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    selectedMethod = button.dataset.subscriptionMethod;
+                    methodButtons.forEach((item) => item.classList.toggle('active', item === button));
+                    methodPanels.forEach((panel) => panel.classList.toggle('active', panel.dataset.subscriptionPanel === selectedMethod));
+                    clearCheckoutMessage();
+                });
+            });
+
+            copyPixButton.addEventListener('click', async () => {
+                await navigator.clipboard.writeText(pixCodeEl.value);
+                copyPixButton.textContent = 'Copiado';
+                setTimeout(() => { copyPixButton.textContent = 'Copiar codigo PIX'; }, 1500);
+            });
+
+            simulatePixButton.addEventListener('click', async () => {
+                clearCheckoutMessage();
+                simulatePixButton.disabled = true;
+                simulatePixButton.textContent = 'Simulando...';
+
+                try {
+                    await simulatePixPayment();
+                    await checkPixStatus();
+                    showCheckoutMessage('Pagamento PIX simulado com sucesso. Agora confirme o teste.', 'success');
+                } catch (error) {
+                    showCheckoutMessage(error.message || 'Nao foi possivel simular o PIX.');
+                } finally {
+                    simulatePixButton.disabled = false;
+                    simulatePixButton.textContent = 'Simular pagamento';
+                }
+            });
+
+            backToFormButton.addEventListener('click', () => {
+                closeCheckoutModal();
+                modal.classList.add('active');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('overflow-hidden');
+            });
+
+            confirmPaymentButton.addEventListener('click', async () => {
+                clearCheckoutMessage();
+                confirmPaymentButton.disabled = true;
+                confirmPaymentButton.textContent = 'Confirmando...';
+
+                try {
+                    if (selectedMethod === 'pix') {
+                        const currentStatus = await checkPixStatus();
+                        if (currentStatus !== 'PAID') {
+                            await simulatePixPayment();
+                            await checkPixStatus();
+                        }
+                    }
+
+                    finishSubscriptionTest(selectedMethod);
+                } catch (error) {
+                    showCheckoutMessage(error.message || 'Nao foi possivel confirmar o pagamento de teste.');
+                } finally {
+                    confirmPaymentButton.disabled = false;
+                    confirmPaymentButton.textContent = 'Confirmar teste';
+                }
+            });
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                if (!selectedPlan) return;
+
+                clearFeedback();
+                submitButton.disabled = true;
+                submitButton.textContent = 'Gerando pagamento...';
+                showMessage('Gerando PIX de teste pela API da AbacatePay...', 'info');
+
+                try {
+                    subscriptionCustomer = getCustomer();
+                    clearCheckoutMessage();
+                    await createPixCharge();
+                    closeModal();
+                    openCheckoutModal();
+                } catch (error) {
+                    showMessage(error.message || 'Nao foi possivel iniciar o pagamento.');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Gerar pagamento';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
