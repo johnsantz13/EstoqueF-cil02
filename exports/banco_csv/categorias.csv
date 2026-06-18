@@ -1,0 +1,5 @@
+﻿id;nome;tipo;ativo;criado_em;atualizado_em
+1;Hamburgueres;produto;1;2026-06-08T10:23:55.000Z;2026-06-08T10:23:55.000Z
+2;Bebidas;produto;1;2026-06-08T10:23:55.000Z;2026-06-08T10:23:55.000Z
+3;Acompanhamentos;produto;1;2026-06-08T10:23:55.000Z;2026-06-08T10:23:55.000Z
+4;Ingredientes;ingrediente;1;2026-06-08T10:23:55.000Z;2026-06-08T10:23:55.000Z

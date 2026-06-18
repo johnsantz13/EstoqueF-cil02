@@ -1,0 +1,4 @@
+﻿id;categoria_id;nome;codigo;descricao;imagem_url;preco_venda;custo_total;margem_lucro;ativo;criado_em;atualizado_em
+1;1;Hamburguer Classico;HB001;"Pao brioche, carne 180g, queijo, alface e tomate.";/imagens/cards/burguerClassico.jpg;21.90;0.00;21.90;1;2026-06-08T10:23:55.000Z;2026-06-08T10:23:55.000Z
+2;3;Batata Frita;AC001;Porcao generosa de batatas crocantes com sal especial.;/imagens/cards/batata-frita.webp;12.90;0.00;12.90;1;2026-06-08T10:23:55.000Z;2026-06-08T10:23:55.000Z
+3;2;Coca-Cola Lata;BB001;"350ml, gelada.";/imagens/cards/cocalata.webp;5.00;0.00;5.00;1;2026-06-08T10:23:55.000Z;2026-06-08T10:23:55.000Z

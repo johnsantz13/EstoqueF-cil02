@@ -1,0 +1,168 @@
+﻿tabela;coluna;tipo;permite_nulo;chave;padrao;extra
+adicionais_item_pedido;id;bigint unsigned;NO;PRI;;auto_increment
+adicionais_item_pedido;item_pedido_id;bigint unsigned;NO;MUL;;
+adicionais_item_pedido;nome;varchar(140);NO;;;
+adicionais_item_pedido;preco;"decimal(12,2)";NO;;0.00;
+adicionais_item_pedido;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+adicionais_item_pedido;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+caixas;id;bigint unsigned;NO;PRI;;auto_increment
+caixas;aberto_por;bigint unsigned;YES;MUL;;
+caixas;fechado_por;bigint unsigned;YES;MUL;;
+caixas;valor_abertura;"decimal(12,2)";NO;;0.00;
+caixas;valor_fechamento;"decimal(12,2)";YES;;;
+caixas;status;"enum('aberto','fechado')";NO;;aberto;
+caixas;aberto_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+caixas;fechado_em;datetime;YES;;;
+caixas;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+categorias;id;bigint unsigned;NO;PRI;;auto_increment
+categorias;nome;varchar(120);NO;UNI;;
+categorias;tipo;"enum('produto','ingrediente')";NO;;produto;
+categorias;ativo;tinyint(1);NO;;1;
+categorias;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+categorias;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+cobrancas_pix;id;bigint unsigned;NO;PRI;;auto_increment
+cobrancas_pix;pedido_id;bigint unsigned;YES;MUL;;
+cobrancas_pix;venda_id;bigint unsigned;YES;MUL;;
+cobrancas_pix;chave_pix;varchar(160);NO;;;
+cobrancas_pix;payload;text;NO;;;
+cobrancas_pix;valor;"decimal(12,2)";NO;;;
+cobrancas_pix;status;"enum('pendente','pago','cancelado','expirado')";NO;;pendente;
+cobrancas_pix;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+cobrancas_pix;pago_em;datetime;YES;;;
+cobrancas_pix;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+compras;id;bigint unsigned;NO;PRI;;auto_increment
+compras;fornecedor_id;bigint unsigned;NO;MUL;;
+compras;status;"enum('rascunho','enviado','recebido','cancelado')";NO;;rascunho;
+compras;total;"decimal(12,2)";NO;;0.00;
+compras;observacoes;text;YES;;;
+compras;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+compras;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+fornecedores;id;bigint unsigned;NO;PRI;;auto_increment
+fornecedores;nome_empresa;varchar(160);NO;MUL;;
+fornecedores;nome_contato;varchar(120);YES;;;
+fornecedores;cnpj;varchar(24);YES;MUL;;
+fornecedores;telefone;varchar(32);YES;;;
+fornecedores;email;varchar(160);YES;;;
+fornecedores;endereco;varchar(255);YES;;;
+fornecedores;ativo;tinyint(1);NO;;1;
+fornecedores;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+fornecedores;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+ingredientes;id;bigint unsigned;NO;PRI;;auto_increment
+ingredientes;nome;varchar(140);NO;MUL;;
+ingredientes;unidade_id;bigint unsigned;YES;MUL;;
+ingredientes;fornecedor_id;bigint unsigned;YES;MUL;;
+ingredientes;custo_por_unidade;"decimal(12,2)";NO;;0.00;
+ingredientes;estoque_minimo;"decimal(12,3)";NO;;0.000;
+ingredientes;ativo;tinyint(1);NO;;1;
+ingredientes;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+ingredientes;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+itens_compra;id;bigint unsigned;NO;PRI;;auto_increment
+itens_compra;compra_id;bigint unsigned;NO;MUL;;
+itens_compra;ingrediente_id;bigint unsigned;NO;MUL;;
+itens_compra;quantidade;"decimal(12,3)";NO;;;
+itens_compra;custo_unitario;"decimal(12,2)";NO;;0.00;
+itens_compra;total;"decimal(12,2)";NO;;0.00;
+itens_compra;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+itens_compra;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+itens_pedido;id;bigint unsigned;NO;PRI;;auto_increment
+itens_pedido;pedido_id;bigint unsigned;NO;MUL;;
+itens_pedido;produto_id;bigint unsigned;YES;MUL;;
+itens_pedido;nome;varchar(160);NO;;;
+itens_pedido;quantidade;int unsigned;NO;;1;
+itens_pedido;preco_unitario;"decimal(12,2)";NO;;0.00;
+itens_pedido;total;"decimal(12,2)";NO;;0.00;
+itens_pedido;observacoes;text;YES;;;
+itens_pedido;status_cozinha;"enum('recebido','preparo','pronto','entregue','cancelado')";NO;MUL;recebido;
+itens_pedido;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+itens_pedido;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+itens_receita;id;bigint unsigned;NO;PRI;;auto_increment
+itens_receita;produto_id;bigint unsigned;NO;MUL;;
+itens_receita;ingrediente_id;bigint unsigned;NO;MUL;;
+itens_receita;quantidade;"decimal(12,3)";NO;;;
+itens_receita;custo_unitario;"decimal(12,2)";NO;;0.00;
+itens_receita;custo_total;"decimal(12,2)";NO;;0.00;
+itens_receita;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+itens_receita;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+lotes_estoque;id;bigint unsigned;NO;PRI;;auto_increment
+lotes_estoque;ingrediente_id;bigint unsigned;NO;MUL;;
+lotes_estoque;fornecedor_id;bigint unsigned;YES;MUL;;
+lotes_estoque;codigo;varchar(80);YES;MUL;;
+lotes_estoque;quantidade;"decimal(12,3)";NO;;0.000;
+lotes_estoque;custo_unitario;"decimal(12,2)";NO;;0.00;
+lotes_estoque;recebido_em;date;YES;;;
+lotes_estoque;vence_em;date;YES;;;
+lotes_estoque;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+lotes_estoque;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+mesas;id;bigint unsigned;NO;PRI;;auto_increment
+mesas;numero;varchar(20);NO;UNI;;
+mesas;status;"enum('disponivel','atendimento','reserva','indisponivel')";NO;;disponivel;
+mesas;lugares;int unsigned;YES;;4;
+mesas;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+mesas;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+movimentacoes_estoque;id;bigint unsigned;NO;PRI;;auto_increment
+movimentacoes_estoque;ingrediente_id;bigint unsigned;NO;MUL;;
+movimentacoes_estoque;lote_id;bigint unsigned;YES;MUL;;
+movimentacoes_estoque;tipo;"enum('entrada','saida','ajuste','perda')";NO;MUL;;
+movimentacoes_estoque;quantidade;"decimal(12,3)";NO;;;
+movimentacoes_estoque;motivo;varchar(255);YES;;;
+movimentacoes_estoque;referencia_tipo;varchar(60);YES;MUL;;
+movimentacoes_estoque;referencia_id;bigint unsigned;YES;;;
+movimentacoes_estoque;criado_por;bigint unsigned;YES;MUL;;
+movimentacoes_estoque;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+movimentacoes_estoque;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+pagamentos;id;bigint unsigned;NO;PRI;;auto_increment
+pagamentos;venda_id;bigint unsigned;YES;MUL;;
+pagamentos;pedido_id;bigint unsigned;YES;MUL;;
+pagamentos;forma;"enum('pix','credito','debito','dinheiro','balcao','outro')";NO;MUL;;
+pagamentos;valor;"decimal(12,2)";NO;;;
+pagamentos;status;"enum('pendente','aprovado','recusado','cancelado')";NO;;aprovado;
+pagamentos;codigo_transacao;varchar(120);YES;;;
+pagamentos;pago_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+pagamentos;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+pedidos;id;bigint unsigned;NO;PRI;;auto_increment
+pedidos;mesa_id;bigint unsigned;YES;MUL;;
+pedidos;nome_cliente;varchar(140);YES;;;
+pedidos;status;"enum('aberto','preparo','pronto','fechado','cancelado')";NO;MUL;aberto;
+pedidos;subtotal;"decimal(12,2)";NO;;0.00;
+pedidos;taxa_atendimento;"decimal(12,2)";NO;;0.00;
+pedidos;desconto;"decimal(12,2)";NO;;0.00;
+pedidos;total;"decimal(12,2)";NO;;0.00;
+pedidos;criado_por;bigint unsigned;YES;MUL;;
+pedidos;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+pedidos;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+pedidos;fechado_em;datetime;YES;;;
+produtos;id;bigint unsigned;NO;PRI;;auto_increment
+produtos;categoria_id;bigint unsigned;YES;MUL;;
+produtos;nome;varchar(160);NO;MUL;;
+produtos;codigo;varchar(60);YES;UNI;;
+produtos;descricao;text;YES;;;
+produtos;imagem_url;varchar(255);YES;;;
+produtos;preco_venda;"decimal(12,2)";NO;;0.00;
+produtos;custo_total;"decimal(12,2)";NO;;0.00;
+produtos;margem_lucro;"decimal(12,2)";NO;;0.00;
+produtos;ativo;tinyint(1);NO;;1;
+produtos;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+produtos;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+unidades;id;bigint unsigned;NO;PRI;;auto_increment
+unidades;nome;varchar(80);NO;;;
+unidades;sigla;varchar(12);NO;UNI;;
+unidades;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+unidades;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+usuarios;id;bigint unsigned;NO;PRI;;auto_increment
+usuarios;nome;varchar(120);NO;;;
+usuarios;email;varchar(160);NO;UNI;;
+usuarios;senha_hash;varchar(255);NO;;;
+usuarios;perfil;"enum('admin','gerente','operador','cozinha')";NO;;operador;
+usuarios;ativo;tinyint(1);NO;;1;
+usuarios;criado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+usuarios;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+vendas;id;bigint unsigned;NO;PRI;;auto_increment
+vendas;pedido_id;bigint unsigned;YES;MUL;;
+vendas;caixa_id;bigint unsigned;YES;MUL;;
+vendas;subtotal;"decimal(12,2)";NO;;0.00;
+vendas;taxa_atendimento;"decimal(12,2)";NO;;0.00;
+vendas;desconto;"decimal(12,2)";NO;;0.00;
+vendas;total;"decimal(12,2)";NO;;0.00;
+vendas;vendido_por;bigint unsigned;YES;MUL;;
+vendas;vendido_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED
+vendas;atualizado_em;timestamp;NO;;CURRENT_TIMESTAMP;DEFAULT_GENERATED on update CURRENT_TIMESTAMP
