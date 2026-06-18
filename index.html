@@ -365,6 +365,8 @@
             let pixCharge = null;
             let subscriptionCustomer = null;
 
+            const onlyDigits = (value) => String(value || '').replace(/\D/g, '');
+
             const formatCurrency = (value) => Number(value).toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
@@ -429,8 +431,7 @@
                 const customer = {
                     name: document.getElementById('customer-name').value.trim(),
                     email: document.getElementById('customer-email').value.trim(),
-                    cellphone: document.getElementById('customer-phone').value.replace(/\D/g, ''),
-                    taxId: document.getElementById('customer-tax-id').value.replace(/\D/g, '')
+                    cellphone: onlyDigits(document.getElementById('customer-phone').value)
                 };
 
                 Object.keys(customer).forEach((key) => {
@@ -440,19 +441,38 @@
                 return customer;
             };
 
+            const resetCheckout = () => {
+                selectedMethod = 'pix';
+                pixCharge = null;
+                methodButtons.forEach((button) => {
+                    button.classList.toggle('active', button.dataset.subscriptionMethod === 'pix');
+                });
+                methodPanels.forEach((panel) => {
+                    panel.classList.toggle('active', panel.dataset.subscriptionPanel === 'pix');
+                });
+                clearCheckoutMessage();
+                pixQrCodeEl.textContent = 'Gerando QR Code...';
+                pixCodeEl.value = 'Gerando cobranca PIX...';
+                copyPixButton.disabled = true;
+                simulatePixButton.disabled = true;
+                simulatePixButton.textContent = 'Simular pagamento';
+            };
+
             const buildPixPayload = () => {
                 const priceInCents = Math.round(Number(selectedPlan.price) * 100);
                 return {
                     amount: priceInCents,
                     description: `Assinatura ${selectedPlan.name} - Estoque Facil`,
                     expiresIn: 3600,
-                    customer: subscriptionCustomer,
                     metadata: {
                         origem: 'landing-planos',
                         planoId: selectedPlan.id,
                         planoNome: selectedPlan.name,
                         valorMensal: priceInCents,
-                        modoTeste: true
+                        modoTeste: true,
+                        clienteNome: subscriptionCustomer?.name,
+                        clienteEmail: subscriptionCustomer?.email,
+                        clienteTelefone: subscriptionCustomer?.cellphone
                     }
                 };
             };
@@ -485,6 +505,7 @@
                 pixQrCodeEl.textContent = 'Gerando QR Code...';
                 pixCodeEl.value = 'Gerando cobranca PIX...';
                 copyPixButton.disabled = true;
+                simulatePixButton.disabled = true;
 
                 const response = await fetch('/api/abacatepay/pix', {
                     method: 'POST',
@@ -499,6 +520,7 @@
 
                 pixCharge = result.data;
                 renderPix();
+                simulatePixButton.disabled = false;
             };
 
             const simulatePixPayment = async () => {
@@ -658,19 +680,26 @@
                 clearFeedback();
                 submitButton.disabled = true;
                 submitButton.textContent = 'Gerando pagamento...';
-                showMessage('Gerando PIX de teste pela API da AbacatePay...', 'info');
+                showMessage('Abrindo opcoes de pagamento...', 'info');
 
                 try {
                     subscriptionCustomer = getCustomer();
-                    clearCheckoutMessage();
-                    await createPixCharge();
+                    resetCheckout();
                     closeModal();
                     openCheckoutModal();
+
+                    await createPixCharge();
+                    showCheckoutMessage('PIX gerado pela AbacatePay. Escolha PIX ou use uma das opcoes de teste.', 'success');
                 } catch (error) {
-                    showMessage(error.message || 'Nao foi possivel iniciar o pagamento.');
+                    pixQrCodeEl.textContent = 'PIX indisponivel.';
+                    pixCodeEl.value = error.message || 'Nao foi possivel gerar a cobranca PIX.';
+                    copyPixButton.disabled = true;
+                    simulatePixButton.disabled = true;
+                    showCheckoutMessage(error.message || 'Nao foi possivel gerar o PIX. As outras opcoes continuam disponiveis.');
                 } finally {
                     submitButton.disabled = false;
                     submitButton.textContent = 'Gerar pagamento';
+                    clearFeedback();
                 }
             });
         });
