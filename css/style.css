@@ -64,6 +64,8 @@ body.sidebar-expanded #main-content {
     margin-top: 8px;
 }
 
+
+/* BOTÃO ADICIONAR MESA */
 .addM{
     display: flex;
     width: 220px;
