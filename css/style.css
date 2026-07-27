@@ -98,3 +98,12 @@ body.sidebar-expanded #main-content {
     border-radius: 7px;
     color: black;
 }
+
+.obs{
+    color: white;
+}
+
+.cx-obs{
+    border-radius: 8px;
+    height: 120px;
+}
