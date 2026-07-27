@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento - Estoque Facil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="60x40" href="/imagens/favicon-60x40.png">
+    <link rel="stylesheet" href="/css/pagamento.css">
+</head>
+<body>
+    <header class="checkout-header text-white">
+        <div class="checkout-shell py-5 flex items-center justify-between gap-4">
+            <a href="cardapio.html" class="flex items-center gap-3">
+                <img src="/imagens/fav.png" alt="Estoque Facil" class="h-11">
+                <div>
+                    <p class="text-sm opacity-90">Finalizar pedido</p>
+                    <h1 class="text-2xl font-extrabold">Pagamento</h1>
+                </div>
+            </a>
+            <a href="cardapio.html" class="checkout-button secondary hidden sm:inline-flex items-center gap-2">
+                <i class="bi bi-arrow-left"></i>
+                Voltar ao cardapio
+            </a>
+        </div>
+    </header>
+
+    <main class="checkout-shell py-8">
+        <div class="mb-6">
+            <p class="text-sm uppercase tracking-wide text-orange-600 font-bold">Pedido <span id="checkout-order-number"></span></p>
+            <h2 class="text-3xl font-extrabold text-gray-900">Escolha como deseja pagar</h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr,390px] gap-6 items-start">
+            <section class="checkout-card p-5 md:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
+                    <button class="payment-method active" data-method="pix" type="button">
+                        <span class="method-icon"><i class="bi bi-qr-code"></i></span>
+                        <strong class="block mt-3">PIX</strong>
+                        <span class="text-sm text-gray-500">Codigo copia e cola</span>
+                    </button>
+                    <button class="payment-method" data-method="card" type="button">
+                        <span class="method-icon"><i class="bi bi-credit-card-2-front"></i></span>
+                        <strong class="block mt-3">Cartao</strong>
+                        <span class="text-sm text-gray-500">Credito ou debito</span>
+                    </button>
+                    <button class="payment-method" data-method="cash" type="button">
+                        <span class="method-icon"><i class="bi bi-cash-stack"></i></span>
+                        <strong class="block mt-3">Dinheiro</strong>
+                        <span class="text-sm text-gray-500">Com troco se precisar</span>
+                    </button>
+                    <button class="payment-method" data-method="counter" type="button">
+                        <span class="method-icon"><i class="bi bi-shop"></i></span>
+                        <strong class="block mt-3">Balcao</strong>
+                        <span class="text-sm text-gray-500">Pagar na retirada</span>
+                    </button>
+                </div>
+
+                <div class="payment-panel active" data-panel="pix">
+                    <div class="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-5 items-center">
+                        <div class="bg-white border border-orange-100 rounded-lg p-5 flex justify-center">
+                            <div id="pix-qrcode"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-extrabold mb-2">Pague com PIX</h3>
+                            <p class="text-gray-600 mb-4">Escaneie o QR Code ou copie o codigo abaixo no app do banco.</p>
+                            <textarea id="pix-code" class="checkout-input h-24 text-sm" readonly></textarea>
+                            <button id="copy-pix" type="button" class="checkout-button mt-3 w-full sm:w-auto">Copiar codigo PIX</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-panel" data-panel="card">
+                    <h3 class="text-xl font-extrabold mb-4">Dados do cartao</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input class="checkout-input md:col-span-2" placeholder="Nome impresso no cartao">
+                        <input class="checkout-input md:col-span-2" placeholder="Numero do cartao">
+                        <input class="checkout-input" placeholder="Validade">
+                        <input class="checkout-input" placeholder="CVV">
+                    </div>
+                </div>
+
+                <div class="payment-panel" data-panel="cash">
+                    <h3 class="text-xl font-extrabold mb-2">Pagamento em dinheiro</h3>
+                    <p class="text-gray-600 mb-4">Informe o valor para troco, se necessario.</p>
+                    <input class="checkout-input max-w-sm" placeholder="Troco para quanto?">
+                </div>
+
+                <div class="payment-panel" data-panel="counter">
+                    <h3 class="text-xl font-extrabold mb-2">Pagamento no balcao</h3>
+                    <p class="text-gray-600">Seu pedido sera enviado e o pagamento pode ser feito na retirada.</p>
+                </div>
+            </section>
+
+            <aside class="checkout-card p-5 md:p-6">
+                <h3 class="text-xl font-extrabold mb-4">Resumo do pedido</h3>
+                <div id="checkout-items" class="max-h-[360px] overflow-y-auto pr-1"></div>
+                <div class="border-t border-orange-100 mt-4 pt-4 space-y-2">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span id="checkout-subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Atendimento (10%)</span>
+                        <span id="checkout-service">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-2xl font-extrabold text-gray-900 pt-2">
+                        <span>Total</span>
+                        <span id="checkout-total" class="text-orange-600">R$ 0,00</span>
+                    </div>
+                </div>
+                <button id="confirm-payment" type="button" class="checkout-button w-full mt-5">Confirmar pagamento</button>
+            </aside>
+        </div>
+    </main>
+
+    <div id="success-overlay" class="success-overlay">
+        <div class="checkout-card max-w-md w-full p-6 text-center">
+            <div class="mx-auto mb-4 w-14 h-14 rounded-full bg-orange-100 text-orange-600 grid place-items-center text-3xl">
+                <i class="bi bi-check2"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold mb-2">Pedido confirmado</h2>
+            <p class="text-gray-600">Forma de pagamento: <strong id="success-method"></strong></p>
+            <p class="text-gray-600 mb-5">Total: <strong id="success-total"></strong></p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="cardapio.html" class="checkout-button secondary text-center">Voltar</a>
+                <button id="send-whatsapp" type="button" class="checkout-button">Enviar WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/qrcode.min.js"></script>
+    <script src="/js/pagamento.js"></script>
+</body>
+</html>
