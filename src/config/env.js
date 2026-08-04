@@ -1,10 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const envPath = path.resolve(__dirname, '..', '..', '.env');
+function loadEnvFile(filePath = path.resolve(__dirname, '..', '..', '.env')) {
+  if (!fs.existsSync(filePath)) {
+    return;
+  }
 
-if (fs.existsSync(envPath)) {
-  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);
 
   lines.forEach((line) => {
     const trimmed = line.trim();
@@ -14,10 +16,16 @@ if (fs.existsSync(envPath)) {
     if (separatorIndex === -1) return;
 
     const key = trimmed.slice(0, separatorIndex).trim();
-    const value = trimmed.slice(separatorIndex + 1).trim().replace(/^["']|["']$/g, '');
+    const value = trimmed.slice(separatorIndex + 1).trim().replace(/^"|"$/g, '');
 
-    if (key && process.env[key] === undefined) {
+    if (key) {
       process.env[key] = value;
     }
   });
 }
+
+loadEnvFile();
+
+module.exports = {
+  loadEnvFile
+};
